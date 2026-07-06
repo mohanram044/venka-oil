@@ -4,19 +4,101 @@ import supabase from '../config/supabase.js';
 import { emitNotification } from '../sockets/index.js';
 
 export async function createRazorpayOrder(req, res) {
-  const { orderId } = req.body;
-
   try {
-    const { data: order, error } = await supabase
-      .from('orders')
-      .select('*')
-      .eq('id', orderId)
-      .single();
+    const { items, address_id, coupon, payment_method } = req.body;
+    const userId = req.user?.id || null;
+    let userEmail = req.user?.email || null;
 
-    if (error || !order) {
-      return res.status(404).json({ message: 'Order not found' });
+    if (!items || !items.length || !address_id) {
+      return res.status(400).json({ message: 'Invalid order data' });
     }
 
+    // 1. Fetch address details
+    const { data: addressData, error: addressError } = await supabase
+      .from('addresses')
+      .select('*')
+      .eq('id', address_id)
+      .single();
+
+    if (addressError || !addressData) {
+      return res.status(404).json({ message: 'Address not found' });
+    }
+
+    const customer_name = addressData.name;
+    const phone = addressData.mobile;
+    const addressString = `${addressData.address}${addressData.landmark ? ', ' + addressData.landmark : ''}, ${addressData.city}, ${addressData.state} - ${addressData.pincode}`;
+    if (!userEmail) userEmail = null;
+
+    // 2. Validate Pricing from DB
+    let subtotal = 0;
+    const validatedItems = [];
+    for (const item of items) {
+      const { data: product } = await supabase
+        .from('products')
+        .select('id, name, variants')
+        .eq('id', item.id)
+        .single();
+      
+      if (!product) {
+        return res.status(404).json({ message: `Product ${item.id} not found` });
+      }
+
+      // Find the variant price
+      let price = item.price; // fallback
+      if (product.variants && Array.isArray(product.variants)) {
+        const variant = product.variants.find(v => v.size === item.size);
+        if (variant) {
+          price = variant.price;
+        }
+      }
+      
+      subtotal += price * item.qty;
+      validatedItems.push({
+        ...item,
+        price,
+        name: product.name
+      });
+    }
+
+    // 3. Calculate Totals
+    let discountPct = 0;
+    if (coupon && coupon.trim().toUpperCase() === "SVOM10") {
+      discountPct = 10;
+    }
+    const discount = Math.round((subtotal * discountPct) / 100);
+    const taxable = subtotal - discount;
+    const gst = Math.round(taxable * 0.05);
+    const shipping = taxable === 0 ? 0 : taxable > 999 ? 0 : 60;
+    const total = taxable + gst + shipping;
+
+    // 4. Create pending order
+    const { data: order, error: orderError } = await supabase
+      .from('orders')
+      .insert({
+        user_id: userId,
+        customer_name,
+        phone,
+        email: userEmail,
+        address: addressString,
+        items: validatedItems,
+        subtotal,
+        gst,
+        shipping,
+        discount,
+        total,
+        coupon: coupon || null,
+        payment_method: payment_method || 'credit_card',
+        status: 'pending', // Pending payment
+      })
+      .select()
+      .single();
+
+    if (orderError || !order) {
+      console.error('[Payment] DB Order Error:', orderError);
+      return res.status(500).json({ message: 'Failed to create internal order' });
+    }
+
+    // 5. Create Razorpay order
     const rpOrder = await razorpay.orders.create({
       amount: Math.round(order.total * 100), // Paise
       currency: 'INR',
@@ -24,7 +106,17 @@ export async function createRazorpayOrder(req, res) {
       notes: { orderId: order.id, customerName: order.customer_name },
     });
 
-    res.status(200).json(rpOrder);
+    // 6. Update order with razorpay_order_id
+    await supabase
+      .from('orders')
+      .update({ razorpay_order_id: rpOrder.id })
+      .eq('id', order.id);
+
+    res.status(200).json({
+      ...rpOrder,
+      internalOrderId: order.id,
+      amount: rpOrder.amount, // in paise
+    });
   } catch (error) {
     console.error('[Payment] createRazorpayOrder error:', error);
     res.status(500).json({ message: 'Error creating payment order' });
@@ -43,6 +135,10 @@ export async function verifyPayment(req, res) {
 
     if (error || !order) {
       return res.status(404).json({ message: 'Order not found' });
+    }
+
+    if (order.status === 'confirmed' || order.status === 'paid') {
+      return res.status(200).json({ message: 'Payment already verified', orderId: order.id });
     }
 
     // Verify HMAC signature
@@ -74,11 +170,23 @@ export async function verifyPayment(req, res) {
 
       await supabase
         .from('orders')
-        .update({ status: 'confirmed' })
+        .update({ status: 'failed', updated_at: new Date().toISOString() })
         .eq('id', orderId);
 
       return res.status(400).json({ message: 'Payment verification failed' });
     }
+
+    // Update order status to confirmed
+    await supabase
+      .from('orders')
+      .update({ 
+        status: 'confirmed', 
+        razorpay_payment_id, 
+        razorpay_signature,
+        payment_status: 'paid',
+        updated_at: new Date().toISOString() 
+      })
+      .eq('id', orderId);
 
     // Log successful payment
     const { data: paymentLog } = await supabase
@@ -119,10 +227,91 @@ export async function verifyPayment(req, res) {
       });
     }
 
-    res.status(200).json({ message: 'Payment verified successfully' });
+    res.status(200).json({ message: 'Payment verified successfully', orderId: order.id });
   } catch (error) {
     console.error('[Payment] verifyPayment error:', error);
     res.status(500).json({ message: 'Error verifying payment' });
+  }
+}
+
+export async function razorpayWebhook(req, res) {
+  try {
+    const signature = req.headers['x-razorpay-signature'];
+    const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
+
+    if (!secret || isSimulator) {
+      return res.status(200).send('Simulator / Webhook bypassed');
+    }
+
+    const isValid = razorpay.validateWebhookSignature(req.rawBody, signature, secret);
+    if (!isValid) {
+      return res.status(400).send('Invalid signature');
+    }
+
+    const payload = JSON.parse(req.rawBody.toString('utf8'));
+    const event = payload.event;
+    
+    if (event === 'payment.captured' || event === 'payment.authorized') {
+      const paymentEntity = payload.payload.payment.entity;
+      const rpOrderId = paymentEntity.order_id;
+      const rpPaymentId = paymentEntity.id;
+
+      const { data: order } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('razorpay_order_id', rpOrderId)
+        .single();
+
+      if (order && order.status === 'pending') {
+        // Idempotently confirm order
+        await supabase
+          .from('orders')
+          .update({ 
+            status: 'confirmed', 
+            razorpay_payment_id: rpPaymentId,
+            payment_status: 'paid',
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', order.id);
+
+        await supabase
+          .from('payments')
+          .insert({
+            user_id: order.user_id,
+            order_id: order.id,
+            customer_name: order.customer_name,
+            payment_method: order.payment_method,
+            amount: order.total,
+            status: 'completed',
+            razorpay_order_id: rpOrderId,
+            razorpay_payment_id: rpPaymentId,
+          });
+      }
+    } else if (event === 'payment.failed') {
+      const paymentEntity = payload.payload.payment.entity;
+      const rpOrderId = paymentEntity.order_id;
+
+      const { data: order } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('razorpay_order_id', rpOrderId)
+        .single();
+
+      if (order && order.status === 'pending') {
+        await supabase
+          .from('orders')
+          .update({ 
+            status: 'failed',
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', order.id);
+      }
+    }
+
+    res.status(200).send('OK');
+  } catch (error) {
+    console.error('[Payment] Webhook Error:', error);
+    res.status(500).send('Webhook Error');
   }
 }
 

@@ -170,14 +170,30 @@ function Checkout() {
           throw new Error("Razorpay SDK failed to load. Are you online?");
         }
 
-        const { data: session } = await supabase.auth.getSession();
+        const { data: sessionData } = await supabase.auth.getSession();
+        const token = sessionData?.session?.access_token;
+        if (!token) throw new Error("Authentication failed");
         
-        const { data: rzpOrderData, error: rzpOrderError } = await supabase.functions.invoke('create-razorpay-order', {
-          body: { amount: total }
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+
+        const createRes = await fetch(`${backendUrl}/api/payments/create-order`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            items: cart,
+            address_id: addressId,
+            coupon: discountPct > 0 ? coupon.trim().toUpperCase() : null,
+            payment_method: getPaymentMethodEnum(values.payment),
+          })
         });
+
+        const rzpOrderData = await createRes.json();
         
-        if (rzpOrderError || rzpOrderData?.error) {
-          throw new Error(rzpOrderError?.message || rzpOrderData?.error || "Failed to create order");
+        if (!createRes.ok || rzpOrderData.message) {
+          throw new Error(rzpOrderData.message || "Failed to create order");
         }
 
         const options = {
@@ -189,22 +205,29 @@ function Checkout() {
           order_id: rzpOrderData.id,
           handler: async function (response: any) {
             try {
-              const { data: verifyData, error: verifyReqError } = await supabase.functions.invoke('verify-payment', {
-                body: {
+              const verifyRes = await fetch(`${backendUrl}/api/payments/verify`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                  orderId: rzpOrderData.internalOrderId,
                   razorpay_order_id: response.razorpay_order_id,
                   razorpay_payment_id: response.razorpay_payment_id,
                   razorpay_signature: response.razorpay_signature,
-                  orderDetails,
-                }
+                })
               });
+
+              const verifyData = await verifyRes.json();
               
-              if (verifyReqError || verifyData?.error) {
-                throw new Error(verifyReqError?.message || verifyData?.error || "Payment verification failed");
+              if (!verifyRes.ok || verifyData.message === "Payment verification failed") {
+                throw new Error(verifyData.message || "Payment verification failed");
               }
 
               clearCart();
               toast.success("Payment successful! Order placed.");
-              navigate({ to: `/invoice/${verifyData.orderId}` });
+              navigate({ to: `/invoice/${verifyData.orderId || rzpOrderData.internalOrderId}` });
             } catch (err: any) {
               toast.error(err.message || "Payment verification failed");
             }
