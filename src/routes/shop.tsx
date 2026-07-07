@@ -89,7 +89,7 @@ function Shop() {
       list = [...list].sort((a, b) => b.variants[0].price - a.variants[0].price);
     if (sort === "name") list = [...list].sort((a, b) => a.name.localeCompare(b.name));
     return list;
-  }, [cat, search, sort]);
+  }, [dbProducts, cat, search, sort]);
 
   const breadcrumbs = [
     { label: "Shop", href: "/shop" }
