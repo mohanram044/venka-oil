@@ -20,10 +20,8 @@ export default defineConfig({
     // Dynamically set the Nitro adapter based on the deployment host.
     // If neither is detected, fall back to node-server or cloudflare.
     preset: isVercel ? "vercel" : isNetlify ? "netlify" : "cloudflare-module",
-  },
-  vite: {
-    ssr: {
-      noExternal: ['@supabase/supabase-js', '@supabase/functions-js', 'tslib']
+    externals: {
+      inline: ['@supabase/supabase-js', '@supabase/functions-js', 'tslib']
     }
   }
 });
