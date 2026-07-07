@@ -47,10 +47,29 @@ function Shop() {
         return;
       }
 
-      const mapped = (data ?? []).map((d: any) => ({
-        ...d,
-        tamilName: d.tamil_name,
-      })) as Product[];
+      const mapped = (data ?? []).map((d: any) => {
+        let safeVariants = [{ size: "Standard", price: 0 }];
+        if (Array.isArray(d.variants) && d.variants.length > 0) {
+          safeVariants = d.variants.map((v: any) => ({
+            size: typeof v?.size === 'string' && v.size ? v.size : "Standard",
+            price: Number(v?.price) || 0
+          }));
+        }
+
+        const validCategories = ["oils", "dryfruits", "palm-products", "honey", "millets"];
+        const category = validCategories.includes(d.category) ? d.category : "oils";
+
+        return {
+          ...d,
+          id: String(d.id || ""),
+          name: String(d.name || "Unknown Product"),
+          description: String(d.description || ""),
+          category,
+          image: typeof d.image === 'string' ? d.image : undefined,
+          tamilName: typeof d.tamil_name === 'string' ? d.tamil_name : undefined,
+          variants: safeVariants,
+        };
+      }) as Product[];
 
       setDbProducts(mapped);
     };
