@@ -36,15 +36,26 @@ function Shop() {
   const [dbProducts, setDbProducts] = useState<Product[]>([]);
 
   useEffect(() => {
-    supabase.from("products").select("*").eq("enabled", true).then(({ data }) => {
-      if (data) {
-        const mapped = data.map((d: any) => ({
-          ...d,
-          tamilName: d.tamil_name,
-        })) as Product[];
-        setDbProducts(mapped);
+    const loadProducts = async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("*");
+
+      if (error) {
+        console.error("[Shop] Failed to load products:", error);
+        toast.error("Failed to load products");
+        return;
       }
-    });
+
+      const mapped = (data ?? []).map((d: any) => ({
+        ...d,
+        tamilName: d.tamil_name,
+      })) as Product[];
+
+      setDbProducts(mapped);
+    };
+
+    loadProducts();
   }, []);
 
   const products = useMemo(() => {
