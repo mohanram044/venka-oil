@@ -41,6 +41,8 @@ function Shop() {
         .from("products")
         .select("*");
 
+      console.log("[Shop Debug] Raw DB products fetched:", data);
+
       if (error) {
         console.error("[Shop] Failed to load products:", error);
         toast.error("Failed to load products");
@@ -48,13 +50,18 @@ function Shop() {
       }
 
       const mapped = (data ?? []).map((d: any) => {
-        let safeVariants = [{ size: "Standard", price: 0 }];
-        if (Array.isArray(d.variants) && d.variants.length > 0) {
-          safeVariants = d.variants.map((v: any) => ({
-            size: typeof v?.size === 'string' && v.size ? v.size : "Standard",
-            price: Number(v?.price) || 0
-          }));
-        }
+        const safeVariants = [{ 
+          size: d.weight || "Standard", 
+          price: Number(d.price) || 0 
+        }];
+
+        let image = undefined;
+        try {
+          const parsedImgs = typeof d.images === 'string' ? JSON.parse(d.images) : d.images;
+          if (Array.isArray(parsedImgs) && parsedImgs.length > 0) {
+            image = parsedImgs[0];
+          }
+        } catch (e) {}
 
         const validCategories = ["oils", "dryfruits", "palm-products", "honey", "millets"];
         const category = validCategories.includes(d.category) ? d.category : "oils";
@@ -65,9 +72,11 @@ function Shop() {
           name: String(d.name || "Unknown Product"),
           description: String(d.description || ""),
           category,
-          image: typeof d.image === 'string' ? d.image : undefined,
+          image,
           tamilName: typeof d.tamil_name === 'string' ? d.tamil_name : undefined,
           variants: safeVariants,
+          stock: d.stock || 0,
+          enabled: d.is_active ?? true,
         };
       }) as Product[];
 
