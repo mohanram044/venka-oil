@@ -353,11 +353,15 @@ function CollapsibleReviewsWrapper({ productId, initialRating }: { productId: st
   const [summary, setSummary] = useState<{ averageRating: number, totalReviews: number } | null>(null);
 
   useEffect(() => {
-    supabase.rpc("get_product_reviews_summary", { p_product_id: productId }).then(({ data, error }) => {
-      if (!error && data) {
-        setSummary(data as any);
-      }
-    });
+    supabase.rpc("get_product_reviews_summary", { p_product_id: productId })
+      .single()
+      .then(({ data, error }) => {
+        if (!error && data) {
+          setSummary(data as any);
+        } else if (error && error.code !== "PGRST116") {
+          console.error(`[Shop] Failed to fetch review summary for product ${productId}:`, error);
+        }
+      });
   }, [productId]);
 
   const rating = summary?.averageRating || initialRating || 0;
