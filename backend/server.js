@@ -30,12 +30,31 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-// Allowed CORS origins — extend via FRONTEND_URL env var for Vercel/Netlify etc.
 const allowedOrigins = [
-  process.env.FRONTEND_URL || 'http://localhost:5173',
+  process.env.FRONTEND_URL,
+  'http://localhost:5173',
   'http://localhost:3000',
   'http://localhost:4173',
-];
+].filter(Boolean);
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    // allow server-to-server / Postman / curl requests
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    console.log('❌ CORS blocked origin:', origin);
+    console.log('✅ Allowed origins:', allowedOrigins);
+
+    return callback(new Error(`CORS not allowed for origin: ${origin}`));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
 
 // ── Socket.io ─────────────────────────────────────────────────────────────────
 const io = new SocketServer(server, {
@@ -50,7 +69,7 @@ initSocket(io);
 // ── Security middleware ───────────────────────────────────────────────────────
 // Helmet sets sensible HTTP security headers; CSP disabled to allow Swagger UI.
 app.use(helmet({ contentSecurityPolicy: false }));
-app.use(cors({ origin: allowedOrigins, credentials: true }));
+app.use(cors(corsOptions));
 app.use(express.json({ 
   limit: '10mb',
   verify: (req, res, buf) => {
