@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PRODUCTS, type Product } from "@/lib/products";
+import { type Product } from "@/lib/products";
 import { useShop } from "@/lib/store";
 import { ProductReviews } from "@/components/shop/ProductReviews";
 import { SEO } from "@/components/SEO";
@@ -33,8 +33,22 @@ function Shop() {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<Sort>("featured");
 
+  const [dbProducts, setDbProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    supabase.from("products").select("*").eq("enabled", true).then(({ data }) => {
+      if (data) {
+        const mapped = data.map((d: any) => ({
+          ...d,
+          tamilName: d.tamil_name,
+        })) as Product[];
+        setDbProducts(mapped);
+      }
+    });
+  }, []);
+
   const products = useMemo(() => {
-    let list = PRODUCTS.filter((p) => cat === "all" || p.category === cat);
+    let list = dbProducts.filter((p) => cat === "all" || p.category === cat);
     if (search.trim()) {
       const s = search.toLowerCase();
       list = list.filter((p) => p.name.toLowerCase().includes(s));

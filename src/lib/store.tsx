@@ -47,10 +47,21 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     });
 
     try {
+      const isInvalidId = (id: string) => /^[1-5]0000000-0000-0000-0000-/.test(id);
+
       const cartRaw = localStorage.getItem(CART_STORAGE_KEY);
-      if (cartRaw) setCart(JSON.parse(cartRaw).cart || []);
+      if (cartRaw) {
+        const parsedCart = JSON.parse(cartRaw).cart || [];
+        const validCart = parsedCart.filter((item: CartItem) => !isInvalidId(item.id));
+        setCart(validCart);
+      }
+
       const wishlistRaw = localStorage.getItem(WISHLIST_STORAGE_KEY);
-      if (wishlistRaw) setWishlist(JSON.parse(wishlistRaw));
+      if (wishlistRaw) {
+        const parsedWishlist = JSON.parse(wishlistRaw);
+        const validWishlist = parsedWishlist.filter((item: WishlistItem) => !isInvalidId(item.id));
+        setWishlist(validWishlist);
+      }
     } catch {}
     setHydrated(true);
 
