@@ -23,5 +23,8 @@ export default defineConfig({
     externals: {
       inline: ['@supabase/supabase-js', '@supabase/functions-js', 'tslib']
     }
+  },
+  ssr: {
+    noExternal: ['@supabase/supabase-js', '@supabase/functions-js', 'tslib']
   }
 });
