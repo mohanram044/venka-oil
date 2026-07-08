@@ -42,7 +42,7 @@ export async function createRazorpayOrder(req, res) {
     for (const item of items) {
       const { data: product, error } = await supabase
         .from('products')
-        .select('id, name, variants')
+        .select('id, name, price')
         .eq('id', item.id)
         .single();
       
@@ -55,14 +55,8 @@ export async function createRazorpayOrder(req, res) {
         return res.status(404).json({ message: `Product ${item.id} not found` });
       }
 
-      // Find the variant price
-      let price = item.price; // fallback
-      if (product.variants && Array.isArray(product.variants)) {
-        const variant = product.variants.find(v => v.size === item.size);
-        if (variant) {
-          price = variant.price;
-        }
-      }
+      // Use product price from DB
+      let price = product.price != null ? product.price : item.price;
       
       subtotal += price * item.qty;
       validatedItems.push({
