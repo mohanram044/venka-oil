@@ -78,24 +78,25 @@ export async function createRazorpayOrder(req, res) {
     const total = taxable + gst + shipping;
 
     // 4. Create pending order
+    const generatedOrderNumber = `ORD-${Date.now()}`;
+    const insertPayload = {
+      user_id: userId,
+      order_number: generatedOrderNumber,
+      address_id: address_id || null,
+      subtotal,
+      gst_total: gst,
+      shipping_total: shipping,
+      discount_total: discount,
+      grand_total: total,
+      status: 'pending',
+      coupon_code: coupon || null,
+      delivery_notes: null,
+      expected_delivery_date: null,
+    };
+
     const { data: order, error: orderError } = await supabase
       .from('new_orders')
-      .insert({
-        user_id: userId,
-        customer_name,
-        phone,
-        email: userEmail,
-        address: addressString,
-        items: validatedItems,
-        subtotal,
-        gst,
-        shipping,
-        discount,
-        total,
-        coupon: coupon || null,
-        payment_method: payment_method || 'credit_card',
-        status: 'pending', // Pending payment
-      })
+      .insert(insertPayload)
       .select()
       .single();
 
