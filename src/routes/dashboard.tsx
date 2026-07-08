@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { PRODUCTS } from "@/lib/products";
 
@@ -62,6 +62,7 @@ function Dashboard() {
     queryKey: ["orders", user?.id, isAdmin],
     enabled: !!user,
     queryFn: async () => {
+      const supabase = await getSupabase();
       const { data, error } = await supabase
         .from("orders")
         .select("*")
@@ -75,6 +76,7 @@ function Dashboard() {
     queryKey: ["reviews-all"],
     enabled: isAdmin,
     queryFn: async () => {
+      const supabase = await getSupabase();
       const { data, error } = await supabase
         .from("reviews")
         .select("id, product_id, rating, created_at")
@@ -90,28 +92,33 @@ function Dashboard() {
     if (typeof window !== "undefined" && "Notification" in window) {
       if (Notification.permission === "default") Notification.requestPermission();
     }
-    const channel = supabase
-      .channel("orders-owner")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "orders" },
-        (payload) => {
-          const o = payload.new as OrderRow;
-          toast.success(`New order from ${o.customer_name} · ₹${o.total}`, {
-            description: `${o.items.length} item(s) · ${o.payment_method}`,
-          });
-          try { audioRef.current?.play().catch(() => {}); } catch {}
-          if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
-            new Notification("New order received", {
-              body: `${o.customer_name} placed an order of ₹${o.total}`,
+    let channel: any;
+    getSupabase().then(supabase => {
+      channel = supabase
+        .channel("orders-owner")
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "orders" },
+          (payload) => {
+            const o = payload.new as OrderRow;
+            toast.success(`New order from ${o.customer_name} · ₹${o.total}`, {
+              description: `${o.items.length} item(s) · ${o.payment_method}`,
             });
-          }
-          queryClient.invalidateQueries({ queryKey: ["orders"] });
-        },
-      )
-      .subscribe();
+            try { audioRef.current?.play().catch(() => {}); } catch {}
+            if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
+              new Notification("New order received", {
+                body: `${o.customer_name} placed an order of ₹${o.total}`,
+              });
+            }
+            queryClient.invalidateQueries({ queryKey: ["orders"] });
+          },
+        )
+        .subscribe();
+    });
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) {
+        getSupabase().then(s => s.removeChannel(channel));
+      }
     };
   }, [isAdmin, queryClient]);
 
@@ -247,6 +254,7 @@ function Dashboard() {
                         <button
                           key={s}
                           onClick={async () => {
+                            const supabase = await getSupabase();
                             const { error } = await supabase
                               .from("orders").update({ status: s }).eq("id", o.id);
                             if (error) toast.error(error.message);

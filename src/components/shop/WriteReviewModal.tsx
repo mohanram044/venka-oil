@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -36,6 +36,7 @@ export function WriteReviewModal({ productId, isOpen, onClose, onSuccess }: Writ
 
   const loadExistingReview = async () => {
     setInitialLoading(true);
+    const supabase = await getSupabase();
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       setInitialLoading(false);
@@ -71,6 +72,7 @@ export function WriteReviewModal({ productId, isOpen, onClose, onSuccess }: Writ
     setLoading(true);
     
     // Call the RPC which handles upsert and verified purchase logic
+    const supabase = await getSupabase();
     const { data, error } = await supabase.rpc("submit_review", {
       p_product_id: productId,
       p_rating: rating,

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Download, Printer } from "lucide-react";
@@ -84,6 +84,7 @@ function AdminReports() {
     try {
       const { start, end, grouping } = getDateFilter();
       const p = { p_start: start, p_end: end };
+      const supabase = await getSupabase();
 
       const [rKpi, rSales, rProd, rCat, rGst, rInv, rCust, rOrd, rDel, rRev] = await Promise.all([
         supabase.rpc("get_dashboard_kpis", p),
@@ -125,15 +126,18 @@ function AdminReports() {
       debounceTimer = setTimeout(() => loadData(), 2000); // 2 sec debounce
     };
 
-    const channels = supabase.channel('custom-all-channel')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'new_orders' }, handleRealtime)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, handleRealtime)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'reviews' }, handleRealtime)
-      .subscribe();
+    let channels: any;
+    getSupabase().then(supabase => {
+      channels = supabase.channel('custom-all-channel')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'new_orders' }, handleRealtime)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, handleRealtime)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'reviews' }, handleRealtime)
+        .subscribe();
+    });
 
     return () => {
       clearTimeout(debounceTimer);
-      supabase.removeChannel(channels);
+      if (channels) getSupabase().then(s => s.removeChannel(channels));
     };
   }, [dateRange]);
 

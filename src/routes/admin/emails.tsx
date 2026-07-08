@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -21,6 +21,7 @@ function AdminEmails() {
 
   const fetchLogs = async () => {
     setLoading(true);
+    const supabase = await getSupabase();
     let query = supabase
       .from("email_logs")
       .select("*")
@@ -57,6 +58,7 @@ function AdminEmails() {
     // If webhook is INSERT only, we can call the edge function directly, or insert a new row.
     // Let's invoke the edge function directly for retry.
     
+    const supabase = await getSupabase();
     const { data, error } = await supabase.functions.invoke('process-email', {
       body: { record: log }
     });

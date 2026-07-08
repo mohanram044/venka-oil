@@ -1,6 +1,6 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabase } from "@/integrations/supabase/client";
 import { Loader2, MapPin, Truck, CheckCircle2, Clock, Map as MapIcon } from "lucide-react";
 import { format } from "date-fns";
 
@@ -38,6 +38,7 @@ function OrderTracking() {
 
   const fetchTrackingData = async () => {
     // Fetch Order details
+    const supabase = await getSupabase();
     const { data: oData, error: oError } = await supabase
       .from("new_orders")
       .select(`
@@ -65,16 +66,19 @@ function OrderTracking() {
     fetchTrackingData();
 
     // Real-time tracking subscription
-    const channel = supabase
-      .channel(`tracking-${orderId}`)
-      .on(
-        "postgres_changes", 
-        { event: "INSERT", schema: "public", table: "delivery_logs", filter: `order_id=eq.${orderId}` },
-        () => fetchTrackingData()
-      )
-      .subscribe();
+    let channel: any;
+    getSupabase().then(supabase => {
+      channel = supabase
+        .channel(`tracking-${orderId}`)
+        .on(
+          "postgres_changes", 
+          { event: "INSERT", schema: "public", table: "delivery_logs", filter: `order_id=eq.${orderId}` },
+          () => fetchTrackingData()
+        )
+        .subscribe();
+    });
 
-    return () => { supabase.removeChannel(channel); };
+    return () => { if (channel) getSupabase().then(s => s.removeChannel(channel)); };
   }, [orderId]);
 
   if (loading) {

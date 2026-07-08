@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Star, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "@tanstack/react-router";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 
 type Review = {
@@ -22,6 +22,7 @@ export function ProductReviews({ productId }: { productId: string }) {
   const [loading, setLoading] = useState(false);
 
   async function load() {
+    const supabase = await getSupabase();
     const { data } = await supabase
       .from("reviews")
       .select("id, user_id, rating, comment, created_at")
@@ -52,6 +53,7 @@ export function ProductReviews({ productId }: { productId: string }) {
       rating,
       comment: comment.trim() || null,
     };
+    const supabase = await getSupabase();
     const { error } = myReview
       ? await supabase.from("reviews").update(payload).eq("id", myReview.id)
       : await supabase.from("reviews").insert(payload);

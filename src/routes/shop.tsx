@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Heart, ImageOff } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -37,6 +37,7 @@ function Shop() {
 
   useEffect(() => {
     const loadProducts = async () => {
+      const supabase = await getSupabase();
       const { data, error } = await supabase
         .from("products")
         .select("*");
@@ -383,15 +384,17 @@ function CollapsibleReviewsWrapper({ productId, initialRating }: { productId: st
   const [summary, setSummary] = useState<{ averageRating: number, totalReviews: number } | null>(null);
 
   useEffect(() => {
-    supabase.rpc("get_product_reviews_summary", { p_product_id: productId })
-      .single()
-      .then(({ data, error }) => {
-        if (!error && data) {
-          setSummary(data as any);
-        } else if (error && error.code !== "PGRST116") {
-          console.error(`[Shop] Failed to fetch review summary for product ${productId}:`, error);
-        }
-      });
+    getSupabase().then(supabase => {
+      supabase.rpc("get_product_reviews_summary", { p_product_id: productId })
+        .single()
+        .then(({ data, error }) => {
+          if (!error && data) {
+            setSummary(data as any);
+          } else if (error && error.code !== "PGRST116") {
+            console.error(`[Shop] Failed to fetch review summary for product ${productId}:`, error);
+          }
+        });
+    });
   }, [productId]);
 
   const rating = summary?.averageRating || initialRating || 0;

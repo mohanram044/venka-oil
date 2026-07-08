@@ -2,7 +2,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { ShoppingCart, LayoutDashboard, LogIn, LogOut, Heart, Menu, UserCircle } from "lucide-react";
 import { useShop } from "@/lib/store";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
@@ -18,6 +18,7 @@ export function SiteHeader() {
 
   useEffect(() => {
     async function initUser() {
+      const supabase = await getSupabase();
       const { data } = await supabase.auth.getSession();
       setEmail(data.session?.user.email ?? null);
       if (data.session?.user) {
@@ -33,23 +34,29 @@ export function SiteHeader() {
     }
     initUser();
     
-    const { data: sub } = supabase.auth.onAuthStateChange(async (_e, session) => {
-      setEmail(session?.user.email ?? null);
-      if (session?.user) {
-        const { data: roleData } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", session.user.id)
-          .single();
-        setRole(roleData?.role ?? null);
-      } else {
-        setRole(null);
-      }
+    let sub: any = null;
+    getSupabase().then(supabase => {
+      supabase.auth.onAuthStateChange(async (_e, session) => {
+        setEmail(session?.user.email ?? null);
+        if (session?.user) {
+          const { data: roleData } = await supabase
+            .from("user_roles")
+            .select("role")
+            .eq("user_id", session.user.id)
+            .single();
+          setRole(roleData?.role ?? null);
+        } else {
+          setRole(null);
+        }
+      }).then(({ data }) => {
+        sub = data;
+      });
     });
-    return () => sub.subscription.unsubscribe();
+    return () => { if (sub) sub.subscription.unsubscribe(); };
   }, []);
 
   async function signOut() {
+    const supabase = await getSupabase();
     await supabase.auth.signOut();
     toast.success("Signed out");
   }

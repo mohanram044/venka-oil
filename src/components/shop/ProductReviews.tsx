@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Star, CheckCircle, ThumbsUp, Loader2 } from "lucide-react";
@@ -25,7 +25,7 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setSession(data.session));
+    getSupabase().then(supabase => supabase.auth.getSession().then(({ data }) => setSession(data.session)));
     fetchSummary();
   }, [productId]);
 
@@ -34,6 +34,7 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
   }, [productId, sortBy, page]);
 
   const fetchSummary = async () => {
+    const supabase = await getSupabase();
     const { data, error } = await supabase.rpc("get_product_reviews_summary", { p_product_id: productId });
     if (!error && data) {
       setSummary(data);
@@ -42,6 +43,7 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
 
   const fetchReviews = async () => {
     setLoading(true);
+    const supabase = await getSupabase();
     let query = supabase
       .from("reviews")
       .select("*, profiles!reviews_customer_id_fkey(full_name)")
@@ -80,6 +82,7 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
       return;
     }
     
+    const supabase = await getSupabase();
     const { data, error } = await supabase.rpc("toggle_helpful_vote", { p_review_id: reviewId });
     if (error) {
       toast.error(error.message);
@@ -91,6 +94,7 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
 
   const deleteOwnReview = async (reviewId: string) => {
     if (!confirm("Delete your review?")) return;
+    const supabase = await getSupabase();
     const { error } = await supabase.from("reviews").delete().eq("id", reviewId);
     if (!error) {
       toast.success("Review deleted");

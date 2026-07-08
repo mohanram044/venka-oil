@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabase } from "@/integrations/supabase/client";
 import { Printer, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -18,6 +18,7 @@ function InvoicePage() {
   useEffect(() => {
     async function loadData() {
       try {
+        const supabase = await getSupabase();
         const { data: o, error: errO } = await supabase
           .from("new_orders")
           .select("*, addresses(*)")

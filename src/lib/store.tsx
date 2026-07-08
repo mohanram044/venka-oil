@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabase } from "@/integrations/supabase/client";
 
 export type CartItem = {
   id: string;
@@ -41,9 +41,13 @@ export function ShopProvider({ children }: { children: ReactNode }) {
 
   // Initial Auth & LocalStorage
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setUserId(data.session?.user?.id ?? null));
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
-      setUserId(session?.user?.id ?? null);
+    let subscription: any;
+    getSupabase().then(supabase => {
+      supabase.auth.getSession().then(({ data }) => setUserId(data.session?.user?.id ?? null));
+      const { data } = supabase.auth.onAuthStateChange((_, session) => {
+        setUserId(session?.user?.id ?? null);
+      });
+      subscription = data.subscription;
     });
 
     try {
@@ -65,7 +69,9 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     } catch {}
     setHydrated(true);
 
-    return () => subscription.unsubscribe();
+    return () => {
+      if (subscription) subscription.unsubscribe();
+    };
   }, []);
 
   // Sync from Supabase on Login
@@ -73,6 +79,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     if (!hydrated || !userId) return;
 
     async function syncCart() {
+      const supabase = await getSupabase();
       const { data: dbItems } = await supabase.from("cart_items").select("*").eq("user_id", userId!);
       
       let mergedCart = [...cart];
@@ -115,6 +122,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
 
   const pushToDb = async (item: CartItem, qty: number) => {
     if (!userId) return;
+    const supabase = await getSupabase();
     if (qty <= 0) {
       await supabase.from("cart_items").delete().match({ user_id: userId, product_id: item.id, size: item.size });
     } else {
@@ -167,7 +175,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
   const clearCart = () => {
     setCart([]);
     if (userId) {
-      supabase.from("cart_items").delete().eq("user_id", userId).then();
+      getSupabase().then(supabase => supabase.from("cart_items").delete().eq("user_id", userId).then());
     }
   };
 

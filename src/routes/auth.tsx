@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Mail, KeyRound, ArrowLeft, Loader2, User } from "lucide-react";
 
@@ -23,8 +23,10 @@ function AuthPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/shop" });
+    getSupabase().then(supabase => {
+      supabase.auth.getSession().then(({ data }) => {
+        if (data.session) navigate({ to: "/shop" });
+      });
     });
   }, [navigate]);
 
@@ -43,6 +45,7 @@ function AuthPage() {
     }
 
     setLoading(true);
+    const supabase = await getSupabase();
     
     if (mode === "signup") {
       const { error } = await supabase.auth.signUp({

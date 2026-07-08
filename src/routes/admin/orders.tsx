@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState, useMemo } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   Package,
@@ -47,6 +47,7 @@ function AdminOrders() {
   const [selectedOrder, setSelectedOrder] = useState<OrderView | null>(null);
 
   const fetchMetrics = async () => {
+    const supabase = await getSupabase();
     const { data, error } = await supabase.rpc("get_orders_dashboard_metrics_v2");
     if (!error && data) {
       setMetrics(data);
@@ -54,6 +55,7 @@ function AdminOrders() {
   };
 
   const fetchPartners = async () => {
+    const supabase = await getSupabase();
     const { data } = await supabase.from("delivery_partners").select("id, name").eq("is_active", true);
     if (data) setPartners(data);
   };
@@ -64,6 +66,7 @@ function AdminOrders() {
       setLoading(true);
     }
     
+    const supabase = await getSupabase();
     let query = supabase
       .from("admin_orders_view")
       .select("*", { count: "exact" })
@@ -110,17 +113,22 @@ function AdminOrders() {
     fetchPartners();
     fetchOrders(true);
 
-    const sub = supabase
-      .channel("admin-orders")
-      .on("postgres_changes", { event: "*", schema: "public", table: "new_orders" }, () => {
-        toast.info("Orders updated. Refreshing data...");
-        fetchMetrics();
-        fetchOrders(true);
-      })
-      .subscribe();
+    let sub: any;
+    getSupabase().then(supabase => {
+      sub = supabase
+        .channel("admin-orders")
+        .on("postgres_changes", { event: "*", schema: "public", table: "new_orders" }, () => {
+          toast.info("Orders updated. Refreshing data...");
+          fetchMetrics();
+          fetchOrders(true);
+        })
+        .subscribe();
+    });
 
     return () => {
-      supabase.removeChannel(sub);
+      if (sub) {
+        getSupabase().then(s => s.removeChannel(sub));
+      }
     };
   }, []);
 
@@ -142,6 +150,7 @@ function AdminOrders() {
   }, [page]);
 
   const handleUpdateStatus = async (orderId: string, status: string, partnerId?: string) => {
+    const supabase = await getSupabase();
     const { error } = await supabase.rpc("update_delivery_status", {
       p_order_id: orderId,
       p_status: status,

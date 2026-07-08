@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useShop } from "@/lib/store";
 import { useAuth } from "@/lib/auth";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabase } from "@/integrations/supabase/client";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -124,6 +124,7 @@ function Checkout() {
     console.log("cart items being sent to RPC:", cart.map(c => ({ id: c.id, name: c.name })));
 
     try {
+      const supabase = await getSupabase();
       let addressId = selectedAddressId;
       if (!addressId) {
         const { data, error } = await supabase.from('addresses').insert({
@@ -260,10 +261,12 @@ function Checkout() {
 
   useEffect(() => {
     if (user) {
-      supabase.from("addresses").select("*").eq("user_id", user.id).then(({ data }) => {
-        if (data && data.length > 0) {
-          setSavedAddresses(data);
-        }
+      getSupabase().then(supabase => {
+        supabase.from("addresses").select("*").eq("user_id", user.id).then(({ data }) => {
+          if (data && data.length > 0) {
+            setSavedAddresses(data);
+          }
+        });
       });
     }
   }, [user]);

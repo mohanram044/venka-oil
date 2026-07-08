@@ -5,7 +5,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/lib/auth";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -23,6 +23,7 @@ function Profile() {
 
   async function signOut() {
     setSigningOut(true);
+    const supabase = await getSupabase();
     await supabase.auth.signOut();
     setSigningOut(false);
   }

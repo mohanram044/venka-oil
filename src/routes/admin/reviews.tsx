@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -25,6 +25,7 @@ function AdminReviews() {
 
   const fetchReviews = async () => {
     setLoading(true);
+    const supabase = await getSupabase();
     let query = supabase
       .from("reviews")
       .select("*, products(name), profiles!reviews_customer_id_fkey(full_name)")
@@ -48,6 +49,7 @@ function AdminReviews() {
   }, [statusFilter]);
 
   const updateStatus = async (id: string, newApproved: boolean) => {
+    const supabase = await getSupabase();
     const { error } = await supabase
       .from("reviews")
       .update({ approved: newApproved, updated_at: new Date().toISOString() })
@@ -66,6 +68,7 @@ function AdminReviews() {
 
   const deleteReview = async (id: string) => {
     if (!confirm("Are you sure you want to permanently delete this review?")) return;
+    const supabase = await getSupabase();
     const { error } = await supabase.from("reviews").delete().eq("id", id);
     if (error) {
       toast.error(error.message);

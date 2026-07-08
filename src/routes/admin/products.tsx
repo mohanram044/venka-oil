@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabase } from "@/integrations/supabase/client";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -56,6 +56,7 @@ function AdminProducts() {
 
   const fetchProducts = async () => {
     setLoading(true);
+    const supabase = await getSupabase();
     const { data, error } = await supabase
       .from("products")
       .select("*")
@@ -106,6 +107,7 @@ function AdminProducts() {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this product?")) return;
+    const supabase = await getSupabase();
     const { error } = await supabase.from("products").delete().eq("id", id);
     if (error) {
       toast.error(error.message);
@@ -124,6 +126,7 @@ function AdminProducts() {
     const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
     const filePath = `products/${fileName}`;
 
+    const supabase = await getSupabase();
     const { error: uploadError } = await supabase.storage
       .from("product-images")
       .upload(filePath, file);
@@ -145,6 +148,7 @@ function AdminProducts() {
       images: imageUrl ? [imageUrl] : [],
     };
 
+    const supabase = await getSupabase();
     if (selectedProduct) {
       const { error } = await supabase.from("products").update(payload).eq("id", selectedProduct.id);
       if (error) toast.error(error.message);

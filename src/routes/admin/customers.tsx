@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -30,6 +30,7 @@ function AdminCustomers() {
     setLoading(true);
     const offset = (pageNum - 1) * limit;
     
+    const supabase = await getSupabase();
     const { data, error } = await supabase.rpc("get_customers_with_metrics", {
       p_search: searchTerm,
       p_limit: limit,
@@ -61,6 +62,7 @@ function AdminCustomers() {
     setIsDialogOpen(true);
     setDetailsLoading(true);
     
+    const supabase = await getSupabase();
     const { data, error } = await supabase.rpc("get_customer_details", { p_user_id: id });
     
     if (error) {

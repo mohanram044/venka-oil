@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabase } from "@/integrations/supabase/client";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -50,6 +50,7 @@ function AdminDeliveryPartners() {
 
   const fetchPartners = async () => {
     setLoading(true);
+    const supabase = await getSupabase();
     const { data, error } = await supabase
       .from("delivery_partners")
       .select("*")
@@ -94,6 +95,7 @@ function AdminDeliveryPartners() {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this delivery partner? Note: If they have active deliveries, this will fail.")) return;
+    const supabase = await getSupabase();
     const { error } = await supabase.from("delivery_partners").delete().eq("id", id);
     if (error) {
       toast.error(error.message);
@@ -104,6 +106,7 @@ function AdminDeliveryPartners() {
   };
 
   const onSubmit = async (values: FormValues) => {
+    const supabase = await getSupabase();
     if (selectedPartner) {
       const { error } = await supabase.from("delivery_partners").update(values).eq("id", selectedPartner.id);
       if (error) toast.error(error.message);

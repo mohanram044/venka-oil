@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabase } from "@/integrations/supabase/client";
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
   BarChart, Bar
@@ -23,6 +23,7 @@ function AdminDashboard() {
   useEffect(() => {
     async function loadDashboard() {
       try {
+        const supabase = await getSupabase();
         // Fetch metrics via RPC
         const { data: metricsData } = await supabase.rpc("get_dashboard_metrics");
         if (metricsData) setMetrics(metricsData);
@@ -49,19 +50,24 @@ function AdminDashboard() {
     loadDashboard();
 
     // Subscribe to realtime notifications
-    const channel = supabase
-      .channel("admin-notifications")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "admin_notifications" },
-        (payload) => {
-          setNotifications((prev) => [payload.new, ...prev].slice(0, 10));
-        }
-      )
-      .subscribe();
+    let channel: any;
+    getSupabase().then(supabase => {
+      channel = supabase
+        .channel("admin-notifications")
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "admin_notifications" },
+          (payload) => {
+            setNotifications((prev) => [payload.new, ...prev].slice(0, 10));
+          }
+        )
+        .subscribe();
+    });
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) {
+        getSupabase().then(s => s.removeChannel(channel));
+      }
     };
   }, []);
 

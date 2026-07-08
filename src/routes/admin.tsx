@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, redirect, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { toast } from "sonner";
@@ -9,6 +9,7 @@ import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/admin")({
   beforeLoad: async () => {
+    const supabase = await getSupabase();
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       throw redirect({ to: "/auth" });

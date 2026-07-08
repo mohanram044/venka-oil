@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SiteHeader } from "@/components/SiteHeader";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/forgot-password")({
   head: () => ({
@@ -30,6 +30,7 @@ function ForgotPassword() {
       return;
     }
     setLoading(true);
+    const supabase = await getSupabase();
     const { error } = await supabase.auth.resetPasswordForEmail(clean);
     setLoading(false);
     if (error) {

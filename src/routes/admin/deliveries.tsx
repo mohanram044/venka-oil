@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -45,6 +45,7 @@ function AdminDeliveries() {
 
   const fetchDashboard = async () => {
     setLoading(true);
+    const supabase = await getSupabase();
     // Fetch Metrics
     const { data: mData } = await supabase.rpc("get_delivery_metrics");
     if (mData) setMetrics(mData);
@@ -76,14 +77,17 @@ function AdminDeliveries() {
     fetchDashboard();
     
     // Listen for realtime log updates
-    const channel = supabase
-      .channel("delivery-logs-admin")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "delivery_logs" }, () => {
-        fetchDashboard(); // Refresh on new log
-      })
-      .subscribe();
+    let channel: any;
+    getSupabase().then(supabase => {
+      channel = supabase
+        .channel("delivery-logs-admin")
+        .on("postgres_changes", { event: "INSERT", schema: "public", table: "delivery_logs" }, () => {
+          fetchDashboard(); // Refresh on new log
+        })
+        .subscribe();
+    });
 
-    return () => { supabase.removeChannel(channel); };
+    return () => { if (channel) getSupabase().then(s => s.removeChannel(channel)); };
   }, []);
 
   const openUpdateDialog = (order: any) => {
@@ -100,6 +104,7 @@ function AdminDeliveries() {
     
     const partnerId = newPartner === "unassigned" ? null : newPartner;
     
+    const supabase = await getSupabase();
     const { error } = await supabase.rpc("update_delivery_status", {
       p_order_id: selectedOrder.id,
       p_status: newStatus,
