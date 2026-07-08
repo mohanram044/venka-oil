@@ -29,15 +29,27 @@ export async function createRazorpayOrder(req, res) {
     const addressString = `${addressData.address}${addressData.landmark ? ', ' + addressData.landmark : ''}, ${addressData.city}, ${addressData.state} - ${addressData.pincode}`;
     if (!userEmail) userEmail = null;
 
+    console.log("[ENV CHECK] SUPABASE_URL =", process.env.SUPABASE_URL);
+    console.log("[Payments] incoming cartItems:", items);
+
     // 2. Validate Pricing from DB
     let subtotal = 0;
     const validatedItems = [];
+
+    const productIds = items.map(item => item.id);
+    console.log("[Payments] product IDs requested:", productIds);
+
     for (const item of items) {
-      const { data: product } = await supabase
+      const { data: product, error } = await supabase
         .from('products')
         .select('id, name, variants')
         .eq('id', item.id)
         .single();
+      
+      console.log(`[Payments] product fetched for ${item.id}:`, product);
+      if (error) {
+        console.log(`[Payments] fetch error for ${item.id}:`, error);
+      }
       
       if (!product) {
         return res.status(404).json({ message: `Product ${item.id} not found` });

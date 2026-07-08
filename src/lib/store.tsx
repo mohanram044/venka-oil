@@ -137,11 +137,14 @@ export function ShopProvider({ children }: { children: ReactNode }) {
         nextQty = prev[idx].qty + item.qty;
         const next = [...prev];
         next[idx] = { ...next[idx], qty: nextQty };
+        console.log("[Cart] cart state updated", next);
         pushToDb(item, nextQty);
         return next;
       }
+      const nextArr = [...prev, item];
+      console.log("[Cart] cart state updated", nextArr);
       pushToDb(item, nextQty);
-      return [...prev, item];
+      return nextArr;
     });
   };
 

@@ -313,6 +313,7 @@ function ProductCard({ product }: { product: Product }) {
                     toast.error("Please increase the quantity before adding to cart.");
                     return;
                   }
+                  console.log("[Cart] addToCart product", product);
                   addToCart({
                     id: product.id,
                     name: product.name,
@@ -334,6 +335,7 @@ function ProductCard({ product }: { product: Product }) {
                     toast.error("Please increase the quantity before buying.");
                     return;
                   }
+                  console.log("[Cart] addToCart product", product);
                   addToCart({
                     id: product.id,
                     name: product.name,

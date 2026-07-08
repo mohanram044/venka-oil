@@ -176,18 +176,21 @@ function Checkout() {
         
         const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
+        const payload = {
+          items: cart,
+          address_id: addressId,
+          coupon: discountPct > 0 ? coupon.trim().toUpperCase() : null,
+          payment_method: getPaymentMethodEnum(values.payment),
+        };
+        console.log("[Cart] checkout payload", payload);
+
         const createRes = await fetch(`${backendUrl}/api/payments/create-order`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${token}`
           },
-          body: JSON.stringify({
-            items: cart,
-            address_id: addressId,
-            coupon: discountPct > 0 ? coupon.trim().toUpperCase() : null,
-            payment_method: getPaymentMethodEnum(values.payment),
-          })
+          body: JSON.stringify(payload)
         });
 
         const rzpOrderData = await createRes.json();

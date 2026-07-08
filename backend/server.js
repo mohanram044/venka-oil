@@ -28,6 +28,7 @@ dotenv.config();
 
 // ── Express + HTTP server ─────────────────────────────────────────────────────
 const app = express();
+app.set('trust proxy', 1); // Trust the reverse proxy (Render) to avoid express-rate-limit errors
 const server = http.createServer(app);
 
 const allowedOrigins = [
