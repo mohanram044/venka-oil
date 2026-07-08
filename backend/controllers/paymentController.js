@@ -77,17 +77,23 @@ export async function createRazorpayOrder(req, res) {
     const shipping = taxable === 0 ? 0 : taxable > 999 ? 0 : 60;
     const total = taxable + gst + shipping;
 
+    const subtotalNum = Number(subtotal) || 0;
+    const gstNum = Number(gst) || 0;
+    const shippingNum = Number(shipping) || 0;
+    const discountNum = Number(discount) || 0;
+    const totalNum = Number(total) || Math.max(0, subtotalNum + gstNum + shippingNum - discountNum);
+
     // 4. Create pending order
     const generatedOrderNumber = `ORD-${Date.now()}`;
     const insertPayload = {
       user_id: userId,
       order_number: generatedOrderNumber,
       address_id: address_id || null,
-      subtotal,
-      gst_total: gst,
-      shipping_total: shipping,
-      discount_total: discount,
-      grand_total: total,
+      subtotal: subtotalNum,
+      gst_total: gstNum,
+      shipping_total: shippingNum,
+      discount_total: discountNum,
+      grand_total: totalNum,
       status: 'pending',
       coupon_code: coupon || null,
       delivery_notes: null,
@@ -107,10 +113,10 @@ export async function createRazorpayOrder(req, res) {
 
     // 5. Create Razorpay order
     const rpOrder = await razorpay.orders.create({
-      amount: Math.round(order.total * 100), // Paise
+      amount: Math.round(totalNum * 100), // Paise
       currency: 'INR',
       receipt: `receipt_${order.id.slice(0, 8)}`,
-      notes: { orderId: order.id, customerName: order.customer_name },
+      notes: { orderId: order.id, customerName: customer_name },
     });
 
     // 6. Update order with razorpay_order_id
