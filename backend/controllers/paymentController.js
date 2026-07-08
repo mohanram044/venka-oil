@@ -79,7 +79,7 @@ export async function createRazorpayOrder(req, res) {
 
     // 4. Create pending order
     const { data: order, error: orderError } = await supabase
-      .from('orders')
+      .from('new_orders')
       .insert({
         user_id: userId,
         customer_name,
@@ -114,7 +114,7 @@ export async function createRazorpayOrder(req, res) {
 
     // 6. Update order with razorpay_order_id
     await supabase
-      .from('orders')
+      .from('new_orders')
       .update({ razorpay_order_id: rpOrder.id })
       .eq('id', order.id);
 
@@ -134,7 +134,7 @@ export async function verifyPayment(req, res) {
 
   try {
     const { data: order, error } = await supabase
-      .from('orders')
+      .from('new_orders')
       .select('*')
       .eq('id', orderId)
       .single();
@@ -175,7 +175,7 @@ export async function verifyPayment(req, res) {
       });
 
       await supabase
-        .from('orders')
+        .from('new_orders')
         .update({ status: 'failed', updated_at: new Date().toISOString() })
         .eq('id', orderId);
 
@@ -184,7 +184,7 @@ export async function verifyPayment(req, res) {
 
     // Update order status to confirmed
     await supabase
-      .from('orders')
+      .from('new_orders')
       .update({ 
         status: 'confirmed', 
         razorpay_payment_id, 
@@ -263,7 +263,7 @@ export async function razorpayWebhook(req, res) {
       const rpPaymentId = paymentEntity.id;
 
       const { data: order } = await supabase
-        .from('orders')
+        .from('new_orders')
         .select('*')
         .eq('razorpay_order_id', rpOrderId)
         .single();
@@ -271,7 +271,7 @@ export async function razorpayWebhook(req, res) {
       if (order && order.status === 'pending') {
         // Idempotently confirm order
         await supabase
-          .from('orders')
+          .from('new_orders')
           .update({ 
             status: 'confirmed', 
             razorpay_payment_id: rpPaymentId,
@@ -298,14 +298,14 @@ export async function razorpayWebhook(req, res) {
       const rpOrderId = paymentEntity.order_id;
 
       const { data: order } = await supabase
-        .from('orders')
+        .from('new_orders')
         .select('*')
         .eq('razorpay_order_id', rpOrderId)
         .single();
 
       if (order && order.status === 'pending') {
         await supabase
-          .from('orders')
+          .from('new_orders')
           .update({ 
             status: 'failed',
             updated_at: new Date().toISOString()
