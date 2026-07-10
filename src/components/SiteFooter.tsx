@@ -116,12 +116,6 @@ export function SiteFooter() {
               >
                 Contact Us
               </a>
-              <a href="/privacy-policy" className="transition-colors hover:text-[var(--gold)]">
-                Privacy Policy
-              </a>
-              <a href="/terms" className="transition-colors hover:text-[var(--gold)]">
-                Terms & Conditions
-              </a>
             </div>
           </div>
         </div>

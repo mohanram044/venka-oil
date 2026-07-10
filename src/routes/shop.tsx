@@ -300,9 +300,7 @@ function ProductCard({ product }: { product: Product }) {
 
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-              {typeof product.stock === "number" ? (
-                <span className="rounded-full bg-muted px-2 py-1">{product.stock} left</span>
-              ) : null}
+              {/* Stock quantity removed as requested */}
               {product.category === "honey" ? (
                 <Badge className="rounded-full bg-[var(--peach)] text-[var(--brown)]">Premium</Badge>
               ) : null}
