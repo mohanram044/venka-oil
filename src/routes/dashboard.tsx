@@ -63,12 +63,46 @@ function Dashboard() {
     enabled: !!user,
     queryFn: async () => {
       const supabase = await getSupabase();
-      const { data, error } = await supabase
-        .from("orders")
-        .select("*")
+      let query = supabase
+        .from("new_orders")
+        .select(`
+          *,
+          addresses ( name, mobile, address, city, state, pincode ),
+          order_items ( id, product_name, quantity, price, total )
+        `)
         .order("created_at", { ascending: false });
+
+      if (!isAdmin && user?.id) {
+        query = query.eq("user_id", user.id);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
-      return (data ?? []) as unknown as OrderRow[];
+      
+      return (data || []).map((o: any) => ({
+        id: o.id,
+        order_number: o.order_number,
+        user_id: o.user_id,
+        customer_name: o.addresses?.name || "Unknown",
+        phone: o.addresses?.mobile || "",
+        email: null,
+        address: `${o.addresses?.address || ""}, ${o.addresses?.city || ""}, ${o.addresses?.state || ""} - ${o.addresses?.pincode || ""}`,
+        items: (o.order_items || []).map((i: any) => ({
+          id: i.id,
+          name: i.product_name || "Unknown Product",
+          size: "", 
+          price: Number(i.price) || 0,
+          qty: Number(i.quantity) || 1
+        })),
+        subtotal: o.subtotal || 0,
+        gst: o.gst_total || 0,
+        shipping: o.shipping_total || 0,
+        discount: o.discount_total || 0,
+        total: o.grand_total || 0,
+        payment_method: "Razorpay",
+        status: o.status,
+        created_at: o.created_at,
+      })) as unknown as OrderRow[];
     },
   });
 
@@ -98,7 +132,7 @@ function Dashboard() {
         .channel("orders-owner")
         .on(
           "postgres_changes",
-          { event: "INSERT", schema: "public", table: "orders" },
+          { event: "INSERT", schema: "public", table: "new_orders" },
           (payload) => {
             const o = payload.new as OrderRow;
             toast.success(`New order from ${o.customer_name} · ₹${o.total}`, {
@@ -256,7 +290,7 @@ function Dashboard() {
                           onClick={async () => {
                             const supabase = await getSupabase();
                             const { error } = await supabase
-                              .from("orders").update({ status: s }).eq("id", o.id);
+                              .from("new_orders").update({ status: s }).eq("id", o.id);
                             if (error) toast.error(error.message);
                             else {
                               toast.success(`Marked as ${STAGE_LABEL[s]}`);

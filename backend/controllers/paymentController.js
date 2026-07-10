@@ -111,6 +111,30 @@ export async function createRazorpayOrder(req, res) {
       return res.status(500).json({ message: 'Failed to create internal order' });
     }
 
+    // 4.5. Insert order items
+    const orderItemRows = validatedItems.map((item) => ({
+      order_id: order.id,
+      product_name: item.name,
+      quantity: item.qty,
+      price: Number(item.price) || 0,
+      total: (Number(item.price) || 0) * (Number(item.qty) || 0),
+      product_id: item.id || null,
+      size: item.size || null,
+    }));
+
+    const { error: itemsError } = await supabase
+      .from('order_items')
+      .insert(orderItemRows);
+
+    if (itemsError) {
+      console.error('[Payment] DB Order Items Error:', itemsError);
+      
+      // Cleanup the orphaned order row
+      await supabase.from('new_orders').delete().eq('id', order.id);
+      
+      return res.status(500).json({ message: 'Failed to save order items' });
+    }
+
     // 5. Create Razorpay order
     const rpOrder = await razorpay.orders.create({
       amount: Math.round(totalNum * 100), // Paise
