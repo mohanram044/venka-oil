@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
 import { getSupabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Heart, ImageOff } from "lucide-react";
+import { Heart, ImageOff, CheckCircle2 } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -205,6 +205,63 @@ function ProductCard({ product }: { product: Product }) {
   const { addToCart, toggleWishlist, isWishlisted } = useShop();
   const variant = product.variants[variantIdx];
   const wishlisted = isWishlisted(product.id, variant.size);
+  const [isAdded, setIsAdded] = useState(false);
+
+  const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (qty === 0) {
+      toast.error("Please increase the quantity before adding to cart.");
+      return;
+    }
+    
+    addToCart({
+      id: product.id,
+      name: product.name,
+      size: variant.size,
+      price: variant.price,
+      qty,
+      image: product.image,
+    });
+    
+    if (navigator.vibrate) navigator.vibrate(30);
+    setIsAdded(true);
+    setTimeout(() => setIsAdded(false), 1500);
+
+    const button = e.currentTarget;
+    const rect = button.getBoundingClientRect();
+    const cartIcon = document.querySelector('.lucide-shopping-cart');
+    
+    if (cartIcon) {
+      const cartRect = cartIcon.getBoundingClientRect();
+      const flyingDot = document.createElement('div');
+      flyingDot.className = 'fixed z-50 rounded-full bg-primary flex items-center justify-center shadow-lg pointer-events-none transition-all duration-[600ms] ease-[cubic-bezier(0.25,1,0.5,1)]';
+      flyingDot.style.width = '24px';
+      flyingDot.style.height = '24px';
+      flyingDot.style.left = `${rect.left + rect.width / 2 - 12}px`;
+      flyingDot.style.top = `${rect.top + rect.height / 2 - 12}px`;
+      
+      if (product.image) {
+        const img = document.createElement('img');
+        img.src = product.image;
+        img.className = 'w-full h-full object-cover rounded-full';
+        flyingDot.appendChild(img);
+      }
+      
+      document.body.appendChild(flyingDot);
+      
+      requestAnimationFrame(() => {
+        flyingDot.style.left = `${cartRect.left + cartRect.width / 2 - 12}px`;
+        flyingDot.style.top = `${cartRect.top + cartRect.height / 2 - 12}px`;
+        flyingDot.style.transform = 'scale(0.3)';
+        flyingDot.style.opacity = '0';
+      });
+      
+      setTimeout(() => {
+        if (document.body.contains(flyingDot)) {
+          document.body.removeChild(flyingDot);
+        }
+      }, 600);
+    }
+  };
 
   return (
     <div className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition hover:shadow-[var(--shadow-elegant)]">
@@ -307,25 +364,17 @@ function ProductCard({ product }: { product: Product }) {
             </div>
             <div className="grid gap-2">
               <Button
-                onClick={() => {
-                  if (qty === 0) {
-                    toast.error("Please increase the quantity before adding to cart.");
-                    return;
-                  }
-                  console.log("[Cart] addToCart product", product);
-                  addToCart({
-                    id: product.id,
-                    name: product.name,
-                    size: variant.size,
-                    price: variant.price,
-                    qty,
-                    image: product.image,
-                  });
-                  toast.success(`${product.name} (${variant.size}) added to cart`);
-                }}
-                className="w-full"
+                onClick={handleAddToCart}
+                className={`w-full transition-all duration-300 ${isAdded ? 'bg-green-500 hover:bg-green-600 text-white border-green-500 shadow-md' : ''}`}
               >
-                Add to Cart
+                {isAdded ? (
+                  <>
+                    <CheckCircle2 className="mr-2 h-4 w-4" />
+                    Added!
+                  </>
+                ) : (
+                  "Add to Cart"
+                )}
               </Button>
               <Button
                 variant="secondary"
