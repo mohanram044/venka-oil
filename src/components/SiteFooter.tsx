@@ -4,7 +4,7 @@ export function SiteFooter() {
   return (
     <footer className="bg-[oklch(0.11_0.05_95)] text-[var(--cream)]">
       <div className="mx-auto max-w-7xl px-6 py-16 md:px-8">
-        <div className="grid gap-10 lg:grid-cols-[1.2fr_1fr_0.95fr]">
+        <div className="grid gap-10 lg:grid-cols-[1.2fr_1fr_0.95fr] text-center lg:text-left">
           <div className="space-y-4">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[var(--gold)]">
               SRI VENKETESWARA OIL MILL

@@ -43,12 +43,12 @@ function Index() {
       </div>
 
       <div className="relative z-10 flex min-h-screen flex-col">
-        <header className="flex items-start justify-between px-6 py-8 md:px-12">
-          <div className="flex flex-col gap-1.5 animate-in fade-in slide-in-from-top-4 duration-1000 ease-out z-20">
-            <span className="text-[var(--gold)] tracking-[0.3em] text-[0.7rem] md:text-xs font-semibold">
+        <header className="flex flex-col lg:flex-row items-center lg:items-start justify-between px-4 py-8 lg:px-12 gap-4 lg:gap-0">
+          <div className="flex flex-col items-center lg:items-start gap-1.5 animate-in fade-in slide-in-from-top-4 duration-1000 ease-out z-20">
+            <span className="text-[var(--gold)] tracking-[0.3em] text-[0.7rem] lg:text-xs font-semibold text-center lg:text-left">
               ESTD · 1919
             </span>
-            <span className="text-white/90 tracking-[0.2em] text-[0.6rem] md:text-[0.7rem] mt-1 font-medium drop-shadow-sm">
+            <span className="text-white/90 tracking-[0.2em] text-[0.65rem] lg:text-[0.7rem] mt-1 font-medium drop-shadow-sm text-center lg:text-left">
               100% NATURAL • FARM FRESH
             </span>
           </div>
@@ -68,25 +68,25 @@ function Index() {
           </div>
         </header>
 
-        <section className="flex flex-1 items-center px-6 md:px-16">
-          <div className="max-w-2xl space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-1000 ease-out z-10">
+        <section className="flex flex-1 items-center justify-center lg:justify-start px-4 lg:px-16 text-center lg:text-left">
+          <div className="w-full max-w-2xl space-y-6 lg:space-y-8 flex flex-col items-center lg:items-start animate-in fade-in slide-in-from-bottom-6 duration-1000 ease-out z-10">
 
-            <h1 className="font-serif text-5xl md:text-7xl leading-[1.05] text-[var(--cream)] animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-150 fill-mode-both drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]">
-              <span className="block text-3xl md:text-4xl text-white/90 font-medium mb-2">Pure Traditional</span>
+            <h1 className="font-serif text-4xl sm:text-5xl lg:text-7xl leading-[1.1] lg:leading-[1.05] text-[var(--cream)] animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-150 fill-mode-both drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]">
+              <span className="block text-2xl sm:text-3xl lg:text-4xl text-white/90 font-medium mb-2">Pure Traditional</span>
               <span className="block font-bold tracking-wide">SRI VENKETESWARA</span>
               <span className="block text-[var(--gold)] font-bold tracking-widest">OIL MILL</span>
-              <span className="block text-3xl md:text-4xl text-[var(--gold)]/90 font-medium mt-2">Cold Pressed Oils</span>
+              <span className="block text-2xl sm:text-3xl lg:text-4xl text-[var(--gold)]/90 font-medium mt-2">Cold Pressed Oils</span>
             </h1>
 
-            <p className="max-w-lg text-[var(--cream)]/90 text-lg md:text-xl font-medium animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-300 fill-mode-both">
+            <p className="max-w-lg text-[var(--cream)]/90 text-base sm:text-lg lg:text-xl font-medium animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-300 fill-mode-both px-2 lg:px-0">
               Freshly extracted using traditional methods. 100% Natural. Farm Fresh. Delivered to your doorstep.
             </p>
 
-            <div className="flex flex-col sm:flex-row flex-wrap gap-4 pt-2 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-500 fill-mode-both">
+            <div className="flex flex-col lg:flex-row w-full lg:w-auto gap-3 lg:gap-4 pt-2 lg:pt-0 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-500 fill-mode-both">
               <Button
                 asChild
                 size="lg"
-                className="w-full sm:w-auto bg-[var(--gradient-gold)] text-[oklch(0.22_0.04_50)] hover:scale-105 transition-all shadow-[var(--shadow-gold)] h-14 px-10 text-base tracking-wide"
+                className="w-full lg:w-auto bg-[var(--gradient-gold)] text-[oklch(0.22_0.04_50)] hover:scale-105 transition-all shadow-[var(--shadow-gold)] h-14 px-10 text-base tracking-wide"
                 style={{ background: "var(--gradient-gold)" }}
               >
                 <Link to="/shop">Shop Now</Link>
@@ -95,7 +95,7 @@ function Index() {
                 asChild
                 variant="outline"
                 size="lg"
-                className="w-full sm:w-auto h-14 px-8 border-[var(--cream)]/40 bg-transparent text-[var(--cream)] hover:bg-[var(--cream)]/10 hover:border-[var(--cream)] hover:scale-105 transition-all"
+                className="w-full lg:w-auto h-14 px-8 border-[var(--cream)]/40 bg-transparent text-[var(--cream)] hover:bg-[var(--cream)]/10 hover:border-[var(--cream)] hover:scale-105 transition-all"
               >
                 <Link to="/shop">Explore Products</Link>
               </Button>
