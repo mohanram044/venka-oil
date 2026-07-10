@@ -72,14 +72,14 @@ function InvoicePage() {
       </div>
 
       <div className="mx-auto max-w-4xl bg-white p-8 shadow-sm print:shadow-none print:p-0">
-        <div className="flex items-start justify-between border-b border-gray-200 pb-8">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between border-b border-gray-200 pb-8 gap-6">
           <div>
             <h1 className="font-serif text-3xl font-bold text-gray-900">SRI VENKETESWARA OIL MILL</h1>
             <p className="mt-2 text-sm text-gray-500">Premium Cold Pressed Oils</p>
             <p className="text-sm text-gray-500">123 Market Street, City, State - 123456</p>
             <p className="text-sm text-gray-500">GSTIN: 29XXXXXXXXXXXX</p>
           </div>
-          <div className="text-right">
+          <div className="text-left sm:text-right">
             <h2 className="text-xl font-bold text-gray-900">TAX INVOICE</h2>
             <p className="mt-2 text-sm text-gray-500">
               Invoice #: <span className="font-medium text-gray-900">{order.invoice_number || "Pending"}</span>
@@ -93,7 +93,7 @@ function InvoicePage() {
           </div>
         </div>
 
-        <div className="mt-8 flex justify-between">
+        <div className="mt-8 flex flex-col-reverse sm:flex-row justify-between gap-6">
           <div>
             <h3 className="text-sm font-semibold text-gray-900">Bill To:</h3>
             <p className="mt-2 text-sm text-gray-900">{order.addresses?.name || profile?.full_name}</p>
@@ -107,8 +107,8 @@ function InvoicePage() {
           </div>
         </div>
 
-        <div className="mt-8">
-          <table className="w-full text-left text-sm text-gray-900">
+        <div className="mt-8 w-full overflow-x-auto">
+          <table className="w-full min-w-[500px] text-left text-sm text-gray-900">
             <thead className="border-b border-gray-200 text-gray-500">
               <tr>
                 <th className="pb-3 font-semibold">Item Description</th>

@@ -136,8 +136,8 @@ function Shop() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-8 md:px-8">
-        <div className="mb-6 flex flex-wrap items-center gap-3">
-          <div className="flex gap-2">
+        <div className="mb-6 flex flex-col items-start gap-4 md:flex-row md:items-center">
+          <div className="flex flex-wrap gap-2">
             {(["all", "oils", "dryfruits", "palm-products", "honey", "millets"] as const).map((c) => (
               <button
                 key={c}
@@ -162,15 +162,15 @@ function Shop() {
               </button>
             ))}
           </div>
-          <div className="ml-auto flex flex-1 gap-3 md:flex-none">
+          <div className="flex w-full flex-col gap-3 sm:flex-row sm:w-auto md:ml-auto">
             <Input
               placeholder="Search products…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="md:w-64"
+              className="w-full md:w-64"
             />
             <Select value={sort} onValueChange={(v) => setSort(v as Sort)}>
-              <SelectTrigger className="md:w-48">
+              <SelectTrigger className="w-full sm:w-[180px] md:w-48">
                 <SelectValue placeholder="Sort" />
               </SelectTrigger>
               <SelectContent>
@@ -232,7 +232,7 @@ function ProductCard({ product }: { product: Product }) {
         ))}
       </div>
 
-      <div className="flex flex-1 flex-col gap-3 p-5">
+      <div className="flex flex-1 flex-col gap-3 p-4 sm:p-5">
         <div>
           <div className="flex items-center justify-between gap-3">
             <div>

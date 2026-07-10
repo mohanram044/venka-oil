@@ -97,8 +97,8 @@ function AdminCustomers() {
         </div>
       </div>
 
-      <div className="rounded-md border bg-white">
-        <Table>
+      <div className="w-full overflow-x-auto rounded-md border border-border bg-white">
+        <Table className="min-w-[800px] md:min-w-full">
           <TableHeader>
             <TableRow>
               <TableHead>Customer Name</TableHead>

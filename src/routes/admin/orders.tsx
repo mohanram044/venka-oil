@@ -245,7 +245,7 @@ function AdminOrders() {
 
       <div className="rounded-xl border border-border bg-card overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
+          <table className="w-full min-w-[800px] text-sm text-left">
             <thead className="bg-muted/50 text-muted-foreground">
               <tr>
                 <th className="px-4 py-3 font-medium">Order Number</th>

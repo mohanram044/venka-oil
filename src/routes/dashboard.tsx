@@ -316,8 +316,8 @@ function Dashboard() {
 
         <section className="mt-12">
           <h2 className="font-serif text-2xl text-foreground">Payment History</h2>
-          <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-card">
-            <Table>
+          <div className="mt-4 w-full overflow-x-auto rounded-2xl border border-border bg-card">
+            <Table className="min-w-[600px] md:min-w-full">
               <TableHeader>
                 <TableRow>
                   <TableHead>Order ID</TableHead>
@@ -443,8 +443,8 @@ function ProductSalesMix({ orders }: { orders: OrderRow[] }) {
         />
       </div>
 
-      <div className="mt-5 overflow-hidden rounded-2xl border border-border bg-card">
-        <Table>
+      <div className="mt-5 w-full overflow-x-auto rounded-2xl border border-border bg-card">
+        <Table className="min-w-[600px] md:min-w-full">
           <TableHeader>
             <TableRow>
               <TableHead>Product</TableHead>
@@ -556,8 +556,8 @@ function ReviewsCompare({ reviews }: { reviews: ReviewRow[] }) {
       </div>
 
       {reviews.length > 0 && (
-        <div className="mt-5 overflow-hidden rounded-2xl border border-border bg-card">
-          <Table>
+        <div className="mt-5 w-full overflow-x-auto rounded-2xl border border-border bg-card">
+          <Table className="min-w-[600px] md:min-w-full">
             <TableHeader>
               <TableRow>
                 <TableHead>Product</TableHead>

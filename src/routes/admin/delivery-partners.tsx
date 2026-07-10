@@ -151,8 +151,7 @@ function AdminDeliveryPartners() {
         </div>
       </div>
 
-      <div className="rounded-md border bg-white">
-        <Table>
+      <div className="w-full overflow-x-auto rounded-md border border-border bg-white">`n        <Table className="min-w-[800px] md:min-w-full">
           <TableHeader>
             <TableRow>
               <TableHead>Partner Name</TableHead>
@@ -280,3 +279,4 @@ function AdminDeliveryPartners() {
     </div>
   );
 }
+

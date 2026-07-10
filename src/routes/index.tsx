@@ -82,11 +82,11 @@ function Index() {
               Freshly extracted using traditional methods. 100% Natural. Farm Fresh. Delivered to your doorstep.
             </p>
 
-            <div className="flex flex-wrap gap-4 pt-2 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-500 fill-mode-both">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-4 pt-2 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-500 fill-mode-both">
               <Button
                 asChild
                 size="lg"
-                className="bg-[var(--gradient-gold)] text-[oklch(0.22_0.04_50)] hover:scale-105 transition-all shadow-[var(--shadow-gold)] h-14 px-10 text-base tracking-wide"
+                className="w-full sm:w-auto bg-[var(--gradient-gold)] text-[oklch(0.22_0.04_50)] hover:scale-105 transition-all shadow-[var(--shadow-gold)] h-14 px-10 text-base tracking-wide"
                 style={{ background: "var(--gradient-gold)" }}
               >
                 <Link to="/shop">Shop Now</Link>
@@ -95,7 +95,7 @@ function Index() {
                 asChild
                 variant="outline"
                 size="lg"
-                className="h-14 px-8 border-[var(--cream)]/40 bg-transparent text-[var(--cream)] hover:bg-[var(--cream)]/10 hover:border-[var(--cream)] hover:scale-105 transition-all"
+                className="w-full sm:w-auto h-14 px-8 border-[var(--cream)]/40 bg-transparent text-[var(--cream)] hover:bg-[var(--cream)]/10 hover:border-[var(--cream)] hover:scale-105 transition-all"
               >
                 <Link to="/shop">Explore Products</Link>
               </Button>

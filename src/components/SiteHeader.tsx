@@ -194,12 +194,12 @@ export function SiteHeader() {
             
             <Link
               to="/wishlist"
-              className="relative flex h-10 items-center gap-2 rounded-full bg-[var(--gold)] px-4 text-[oklch(0.22_0.04_50)] hover:opacity-90 transition-opacity"
+              className="relative flex h-10 items-center gap-2 rounded-full bg-[var(--gold)] px-3 md:px-4 text-[oklch(0.22_0.04_50)] hover:opacity-90 transition-opacity"
             >
               <Heart className="h-4 w-4" />
-              <span className="text-sm font-medium">Wishlist</span>
+              <span className="hidden md:inline text-sm font-medium">Wishlist</span>
               {wishlistCount > 0 && (
-                <span className="ml-1 rounded-full bg-[oklch(0.11_0.05_95)] px-2 text-xs font-bold text-[var(--cream)]">
+                <span className="absolute -top-1 -right-1 flex h-5 w-5 md:static md:h-auto md:w-auto items-center justify-center md:ml-1 rounded-full bg-[oklch(0.11_0.05_95)] md:px-2 text-[10px] md:text-xs font-bold text-[var(--cream)] border-2 border-background md:border-0">
                   {wishlistCount}
                 </span>
               )}
