@@ -358,14 +358,6 @@ function Checkout() {
                   ))}
                 </ul>
 
-                <div className="mt-4 flex gap-2">
-                  <Input
-                    placeholder="Coupon code (try SVOM10)"
-                    value={coupon}
-                    onChange={(e) => setCoupon(e.target.value)}
-                  />
-                  <Button type="button" variant="outline" onClick={applyCoupon}>Apply</Button>
-                </div>
               </section>
 
               {/* Delivery */}
@@ -488,7 +480,6 @@ function Checkout() {
             <aside className="h-fit space-y-4 rounded-2xl border border-border bg-card p-6 lg:sticky lg:top-24">
               <h2 className="font-serif text-xl text-foreground">Order Summary</h2>
               <Row label="Subtotal" value={`₹${subtotal}`} />
-              {discount > 0 && <Row label={`Discount (${discountPct}%)`} value={`− ₹${discount}`} />}
               <Row label="GST (5%)" value={`₹${gst}`} />
               <Row label="Shipping" value={shipping === 0 ? "Free" : `₹${shipping}`} />
               <div className="h-px bg-border" />
