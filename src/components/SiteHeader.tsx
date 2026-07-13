@@ -142,6 +142,15 @@ export function SiteHeader() {
         {/* Right Actions */}
         <div className="flex items-center gap-2 md:gap-4">
           <div className="hidden md:flex items-center gap-2">
+            {role === 'admin' && (
+              <Link
+                to="/admin"
+                className="flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/10 transition-colors mr-2"
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                Admin Dashboard
+              </Link>
+            )}
             {email ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
