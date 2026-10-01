@@ -1,5 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 dotenv.config();
 
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -23,6 +29,14 @@ export const supabase = createClient(
       persistSession: false,
     },
   }
+);
+
+export const isSupabaseConfigured = Boolean(
+  supabaseUrl &&
+  !supabaseUrl.includes('placeholder') &&
+  supabaseServiceKey &&
+  !supabaseServiceKey.includes('PLACEHOLDER') &&
+  supabaseServiceKey !== 'placeholder-key'
 );
 
 export default supabase;

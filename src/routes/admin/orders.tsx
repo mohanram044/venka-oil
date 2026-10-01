@@ -250,6 +250,7 @@ function AdminOrders() {
               <tr>
                 <th className="px-4 py-3 font-medium">Order Number</th>
                 <th className="px-4 py-3 font-medium">Customer</th>
+                <th className="px-4 py-3 font-medium">Items & Pack Sizes</th>
                 <th className="px-4 py-3 font-medium">Date</th>
                 <th className="px-4 py-3 font-medium">Payment</th>
                 <th className="px-4 py-3 font-medium">Status</th>
@@ -264,6 +265,21 @@ function AdminOrders() {
                   <td className="px-4 py-3">
                     <div className="font-medium">{o.customer_name}</div>
                     <div className="text-xs text-muted-foreground">{o.customer_mobile}</div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="max-w-[220px] text-xs space-y-1">
+                      {o.items && o.items.length > 0 ? (
+                        o.items.map((it, idx) => (
+                          <div key={idx} className="truncate">
+                            <span className="font-medium text-foreground">{it.product_name}</span>{" "}
+                            {it.size && <span className="text-muted-foreground">({it.size})</span>}{" "}
+                            <span className="font-semibold text-primary">x{it.quantity}</span>
+                          </div>
+                        ))
+                      ) : (
+                        <span className="text-muted-foreground text-xs italic">No items listed</span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">
                     {format(new Date(o.created_at), "MMM d, yyyy")}
@@ -296,14 +312,14 @@ function AdminOrders() {
               ))}
               {loading && page === 0 && (
                 <tr>
-                  <td colSpan={7} className="text-center py-8">
+                  <td colSpan={8} className="text-center py-8">
                     <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
                   </td>
                 </tr>
               )}
               {!loading && orders.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="text-center py-8 text-muted-foreground">
+                  <td colSpan={8} className="text-center py-8 text-muted-foreground">
                     No orders found matching your criteria.
                   </td>
                 </tr>

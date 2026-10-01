@@ -36,7 +36,7 @@ export function SiteHeader() {
     
     let sub: any = null;
     getSupabase().then(supabase => {
-      supabase.auth.onAuthStateChange(async (_e, session) => {
+      const { data } = supabase.auth.onAuthStateChange(async (_e, session) => {
         setEmail(session?.user.email ?? null);
         if (session?.user) {
           const { data: roleData } = await supabase
@@ -48,11 +48,10 @@ export function SiteHeader() {
         } else {
           setRole(null);
         }
-      }).then(({ data }) => {
-        sub = data;
       });
+      sub = data;
     });
-    return () => { if (sub) sub.subscription.unsubscribe(); };
+    return () => { if (sub?.subscription) sub.subscription.unsubscribe(); };
   }, []);
 
   async function signOut() {

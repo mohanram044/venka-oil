@@ -51,19 +51,19 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     });
 
     try {
-      const isInvalidId = (id: string) => /^[1-5]0000000-0000-0000-0000-/.test(id);
+      const isValidItem = (item: any) => Boolean(item && item.id && item.name && Number(item.qty) > 0);
 
       const cartRaw = localStorage.getItem(CART_STORAGE_KEY);
       if (cartRaw) {
         const parsedCart = JSON.parse(cartRaw).cart || [];
-        const validCart = parsedCart.filter((item: CartItem) => !isInvalidId(item.id));
+        const validCart = parsedCart.filter((item: CartItem) => isValidItem(item));
         setCart(validCart);
       }
 
       const wishlistRaw = localStorage.getItem(WISHLIST_STORAGE_KEY);
       if (wishlistRaw) {
         const parsedWishlist = JSON.parse(wishlistRaw);
-        const validWishlist = parsedWishlist.filter((item: WishlistItem) => !isInvalidId(item.id));
+        const validWishlist = parsedWishlist.filter((item: WishlistItem) => Boolean(item && item.id));
         setWishlist(validWishlist);
       }
     } catch {}

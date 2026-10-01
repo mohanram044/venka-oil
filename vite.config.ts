@@ -19,7 +19,7 @@ export default defineConfig({
   nitro: {
     // Dynamically set the Nitro adapter based on the deployment host.
     // If neither is detected, fall back to node-server or cloudflare.
-    preset: isVercel ? "vercel" : isNetlify ? "netlify" : "cloudflare-module",
+    // @ts-expect-error - nitro externals property defined by provider
     externals: {
       inline: ['@supabase/supabase-js', '@supabase/functions-js', 'tslib']
     }

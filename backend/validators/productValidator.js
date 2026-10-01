@@ -1,35 +1,40 @@
 import { z } from 'zod';
 import { validate } from './authValidator.js';
 
-/** Schema for a single product variant (size + price pair) */
+/** Schema for a single product variant (size, price, stock, sku, is_active) */
 const variantSchema = z.object({
-  size: z.string().min(1),
-  price: z.number().positive(),
+  id: z.string().optional(),
+  size: z.string().min(1, 'Variant size is required'),
+  price: z.coerce.number().min(0, 'Variant price must be non-negative'),
+  stock: z.coerce.number().int().min(0).optional().default(0),
+  sku: z.string().optional(),
+  is_active: z.boolean().optional().default(true),
 });
 
 /**
- * createProductSchema — Validates the body of POST /api/admin/products
- * The `id` field is the slug-style identifier (e.g. "cold-pressed-coconut-oil").
+ * createProductSchema — Validates the body of POST /api/products
  */
 export const createProductSchema = z.object({
-  id: z
-    .string()
-    .min(1)
-    .regex(/^[a-z0-9-]+$/, 'ID must be lowercase alphanumeric with dashes'),
-  name: z.string().min(2),
+  id: z.string().optional(),
+  name: z.string().min(2, 'Name must be at least 2 characters'),
   tamil_name: z.string().optional(),
+  slug: z.string().optional(),
   category: z.enum(['oils', 'dryfruits', 'palm-products', 'honey', 'millets']),
-  description: z.string().min(10),
-  variants: z.array(variantSchema).min(1),
+  description: z.string().optional().default(''),
+  price: z.coerce.number().min(0).optional().default(0),
+  stock: z.coerce.number().int().min(0).optional().default(0),
+  sku: z.string().optional(),
+  image: z.string().optional(),
+  images: z.array(z.string()).optional().default([]),
+  variants: z.array(variantSchema).optional().default([]),
   tags: z.array(z.string()).optional().default([]),
-  stock: z.number().int().nonnegative().default(0),
-  enabled: z.boolean().default(true),
-  rating: z.number().min(1).max(5).default(5),
+  is_active: z.boolean().optional().default(true),
+  enabled: z.boolean().optional().default(true),
+  rating: z.number().min(1).max(5).optional().default(5),
 });
 
 /**
- * updateProductSchema — Validates the body of PATCH /api/admin/products/:id
- * All fields are optional (partial update).
+ * updateProductSchema — Validates the body of PUT /api/products/:id
  */
 export const updateProductSchema = createProductSchema.partial();
 

@@ -48,6 +48,7 @@ export type OrderView = {
     quantity: number;
     price: number;
     total: number;
+    size?: string;
   }[];
   logs: {
     id: string;
@@ -211,7 +212,14 @@ export function OrderDetailsModal({ order, open, onOpenChange, partners, onUpdat
                   <tbody className="divide-y divide-border">
                     {order.items?.map(item => (
                       <tr key={item.id} className="bg-card">
-                        <td className="px-4 py-3 font-medium">{item.product_name}</td>
+                        <td className="px-4 py-3 font-medium">
+                          <div>{item.product_name}</div>
+                          {item.size && (
+                            <span className="inline-block text-[11px] font-normal text-muted-foreground bg-muted/60 border border-border px-1.5 py-0.5 rounded mt-0.5">
+                              Pack: {item.size}
+                            </span>
+                          )}
+                        </td>
                         <td className="px-4 py-3 text-muted-foreground">₹{item.price}</td>
                         <td className="px-4 py-3">{item.quantity}</td>
                         <td className="px-4 py-3 text-right font-medium">₹{item.total}</td>

@@ -36,6 +36,7 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
   'http://localhost:4173',
+  'http://localhost:8080',
 ].filter(Boolean);
 
 const corsOptions = {
@@ -91,7 +92,7 @@ app.use('/api/', apiLimiter);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 // Used by Render, Railway, or any uptime monitor.
-app.get('/health', (req, res) => {
+const healthHandler = (req, res) => {
   res.status(200).json({
     status: 'healthy',
     service: 'Sri Venkateshwara Oil Mill API',
@@ -99,7 +100,9 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
   });
-});
+};
+app.get('/health', healthHandler);
+app.get('/api/health', healthHandler);
 
 // ── Swagger API documentation ─────────────────────────────────────────────────
 // Available at /api/docs (UI) and /api/docs.json (raw spec)
