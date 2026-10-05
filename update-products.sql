@@ -169,5 +169,11 @@ where slug = 'sivappu-arisi';
 update public.products
 set
   price = '400',
-  images = '["https://i.ibb.co/7QC8b2x/honey-jar-2.jpg"]'
+  images = '["https://i.ibb.co/zhfK115X/malai.jpg"]'
 where slug = 'malai-then';
+
+update public.products
+set
+  price = '300',
+  images = '["https://i.ibb.co/zhfK115X/malai.jpg"]'
+where slug = 'murungaimaram-then';

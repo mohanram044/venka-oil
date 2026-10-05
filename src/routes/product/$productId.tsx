@@ -73,7 +73,7 @@ function ProductDetailPage() {
         }
 
         // 2. Fetch from Backend API if not found
-        const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+        const backendUrl = (typeof process !== "undefined" && process.env?.BACKEND_SERVICE_URL) || import.meta.env.VITE_BACKEND_URL || "";
         if (!rawProd) {
           try {
             const res = await fetch(`${backendUrl}/api/products/${productId}`);

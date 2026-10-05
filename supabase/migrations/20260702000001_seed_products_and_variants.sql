@@ -484,10 +484,26 @@ INSERT INTO public.products (
     400,
     0,
     'malai-then-250g',
-    ARRAY['https://i.ibb.co/7QC8b2x/honey-jar-2.jpg'],
+    ARRAY['https://i.ibb.co/zhfK115X/malai.jpg'],
     ARRAY['Premium', 'Organic'],
     'Pure natural hill honey collected from bees in forest and mountain regions. Naturally rich in enzymes, antioxidants, vitamins, and minerals.',
     '[{"size": "250 g", "price": 400, "stock": 0}, {"size": "500 g", "price": 800, "stock": 0}]'::jsonb,
+    true
+  ),
+  (
+    '50000000-0000-0000-0000-000000000002',
+    'Murungaimaram Then',
+    'முருங்கைமரம் தேன்',
+    'murungaimaram-then',
+    'a0000000-0000-0000-0000-000000000005',
+    'honey',
+    300,
+    0,
+    'murungaimaram-then-250g',
+    ARRAY['https://i.ibb.co/zhfK115X/malai.jpg'],
+    ARRAY['Premium', 'Organic'],
+    'Pure natural drumstick flower honey (Murungaimaram Then) harvested from drumstick tree blossoms. Naturally rich in vitamins, minerals, and antioxidants.',
+    '[{"size": "250 g", "price": 300, "stock": 0}, {"size": "500 g", "price": 600, "stock": 0}]'::jsonb,
     true
   )
 ON CONFLICT (slug) DO UPDATE SET

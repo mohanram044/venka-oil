@@ -25,6 +25,14 @@ export default defineConfig({
     }
   },
   vite: {
+    server: {
+      proxy: {
+        '/api': {
+          target: 'http://localhost:5000',
+          changeOrigin: true,
+        },
+      },
+    },
     ssr: {
       noExternal: ['@supabase/supabase-js', '@supabase/functions-js', 'tslib']
     }

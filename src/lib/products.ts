@@ -719,7 +719,7 @@ export const PRODUCTS: Product[] = [
     category: "honey",
     description:
       "Pure natural hill honey collected from bees in forest and mountain regions. Naturally rich in enzymes, antioxidants, vitamins, and minerals.",
-    image: "https://i.ibb.co/7QC8b2x/honey-jar-2.jpg",
+    image: "https://i.ibb.co/zhfK115X/malai.jpg",
     imageAlt: "Malai Then hill honey with wooden dipper",
     variants: [
       { size: "250 g", price: 400, stock: 0 },
@@ -731,5 +731,29 @@ export const PRODUCTS: Product[] = [
     sku: "malai-then-250g",
     enabled: true,
     rating: 4.9,
+  },
+  {
+    id: "50000000-0000-0000-0000-000000000002",
+    slug: "murungaimaram-then",
+    name: "Murungaimaram Then",
+    tamilName: "முருங்கைமரம் தேன்",
+    category: "honey",
+    description:
+      "Pure natural drumstick flower honey (Murungaimaram Then) harvested from drumstick tree blossoms. Naturally rich in vitamins, minerals, and antioxidants.",
+    image: "https://i.ibb.co/zhfK115X/malai.jpg",
+    imageAlt: "Murungaimaram Then natural drumstick honey",
+    variants: [
+      { size: "250 g", price: 300, stock: 0 },
+      { size: "500 g", price: 600, stock: 0 },
+    ],
+    tags: ["Premium", "Organic"],
+    stock: 0,
+    price: 300,
+    sku: "murungaimaram-then-250g",
+    enabled: true,
+    rating: 4.9,
+    metaTitle: "Murungaimaram Then (Drumstick Honey) — Natural Honey",
+    metaDescription:
+      "Buy pure Murungaimaram Then (Drumstick Flower Honey) rich in natural nutrients and antioxidants.",
   },
 ];

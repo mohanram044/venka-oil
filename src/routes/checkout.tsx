@@ -175,7 +175,7 @@ function Checkout() {
         const token = sessionData?.session?.access_token;
         if (!token) throw new Error("Authentication failed");
         
-        const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+        const backendUrl = (typeof process !== "undefined" && process.env?.BACKEND_SERVICE_URL) || import.meta.env.VITE_BACKEND_URL || "";
 
         const payload = {
           items: cart,
